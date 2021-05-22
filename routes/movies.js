@@ -50,7 +50,7 @@ function moviesApi(app) {
     '/stream',
     //passport.authenticate('jwt', { session: false }),
     async function (req, res, next) {
-      cacheResponse(res, SIXTY_MINUTES_IN_SECONDS);
+      //cacheResponse(res, SIXTY_MINUTES_IN_SECONDS);
       const { tags } = req.query;
       try {
         console.log('llamado liveservice');
