@@ -4,9 +4,7 @@ const MoviesService = require('../services/movies');
 const LiveService = require('../services/live');
 
 const {
-  movieIdSchema,
-  createMovieSchema,
-  updateMovieSchema,
+  movieIdSchema
 } = require('../utils/schemas/movies');
 
 const validationHandler = require('../utils/middleware/validationHandler');
@@ -50,8 +48,7 @@ function moviesApi(app) {
     '/stream',
     //passport.authenticate('jwt', { session: false }),
     async function (req, res, next) {
-      //cacheResponse(res, SIXTY_MINUTES_IN_SECONDS);
-      cacheResponse(res, FIVE_MINUTES_IN_SECONDS);
+      cacheResponse(res, SIXTY_MINUTES_IN_SECONDS);
       const { tags } = req.query;
       try {
         console.log('llamado liveservice');
@@ -107,6 +104,30 @@ function moviesApi(app) {
     }
   );
 
+  router.put(
+    '/:movieId',
+    passport.authenticate('jwt', { session: false }),
+    validationHandler({ movieId: movieIdSchema }, 'params'),
+    async function (req, res, next) {
+      const { movieId } = req.params;
+      const { body: movie } = req;
+      console.log("accede a servicios");
+
+      try {
+        const updatedMovieId = await moviesService.updateMovie({
+          movieId,
+          movie,
+        });
+
+        res.status(200).json({
+          data: updatedMovieId,
+          message: 'movie updated',
+        });
+      } catch (err) {
+        next(err);
+      }
+    }
+  );
   //validationHandler compara el esquema de movieId con el parametro
   router.get(
     '/:movieId',
@@ -149,31 +170,6 @@ function moviesApi(app) {
     }
   );
 
-  router.put(
-    '/:movieId',
-    passport.authenticate('jwt', { session: false }),
-    validationHandler({ movieId: movieIdSchema }, 'params'),
-    validationHandler(updateMovieSchema),
-    async function (req, res, next) {
-      const { movieId } = req.params;
-      const { body: movie } = req;
-
-      try {
-        const updatedMovieId = await moviesService.updateMovie({
-          movieId,
-          movie,
-        });
-
-        res.status(200).json({
-          data: updatedMovieId,
-          message: 'movie updated',
-        });
-      } catch (err) {
-        next(err);
-      }
-    }
-  );
-
   router.delete(
     '/:movieId',
     passport.authenticate('jwt', { session: false }),
@@ -197,7 +193,3 @@ function moviesApi(app) {
 }
 
 module.exports = moviesApi;
-
-// los controlladores = es toda la capa del middlewares, y del router (get,post,put,ect)comunicación con api donde se recibe y se envía JSON
-//los controlladores solo llaman servicios, pero los servicios si llaman a otros servicios y librerías bases de datos u otras apis
-//La unica responsabilidad de la rutas en como recibir parametros y como se los envia a los servicios
