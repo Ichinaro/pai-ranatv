@@ -66,7 +66,7 @@ function moviesApi(app) {
     '/stream/:streamingId',
     passport.authenticate('jwt', { session: false }),
     scopesValidationHandler(['delete:movies']),
-    validationHandler({ movieId: movieIdSchema }, 'params'),
+    validationHandler({ streamingId: movieIdSchema }, 'params'),
     async function (req, res, next) {
       const { streamingId } = req.params;
       try {
