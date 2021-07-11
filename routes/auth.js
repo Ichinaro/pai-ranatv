@@ -61,7 +61,7 @@ function authApi(app) {
 
           //construimos el token
           const token = jwt.sign(payload, config.authJwtSecret, {
-            expiresIn: '15m', //el token expira en 15m
+            expiresIn: '59m', //el token expira en 59m
           });
 
           return res.status(200).json({ token, user: { id, name, email } });
