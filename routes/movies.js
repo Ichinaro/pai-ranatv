@@ -1,5 +1,6 @@
 const express = require('express');
 const passport = require('passport');
+const scopesValidationHandler = require('../utils/middleware/scopesValidationHandler');
 const MoviesService = require('../services/movies');
 const LiveService = require('../services/live');
 
@@ -27,9 +28,7 @@ function moviesApi(app) {
 
   router.get(
     '/',
-    //passport.authenticate('jwt', { session: false }),
     async function (req, res, next) {
-      cacheResponse(res, FIVE_MINUTES_IN_SECONDS); //tiene menos tiempo por que es mas probable que se agregen peliculas a que se editen
       const { tags } = req.query;
 
       try {
@@ -46,9 +45,7 @@ function moviesApi(app) {
 
   router.get(
     '/stream',
-    //passport.authenticate('jwt', { session: false }),
     async function (req, res, next) {
-      cacheResponse(res, SIXTY_MINUTES_IN_SECONDS);
       const { tags } = req.query;
       try {
         console.log('llamado liveservice');
@@ -68,7 +65,8 @@ function moviesApi(app) {
   router.delete(
     '/stream/:streamingId',
     passport.authenticate('jwt', { session: false }),
-    //validationHandler({ movieId: movieIdSchema }, 'params'),
+    scopesValidationHandler(['delete:movies']),
+    validationHandler({ movieId: movieIdSchema }, 'params'),
     async function (req, res, next) {
       const { streamingId } = req.params;
       try {
@@ -88,7 +86,7 @@ function moviesApi(app) {
   router.post(
     '/stream/create',
     passport.authenticate('jwt', { session: false }),
-    //validationHandler(createMovieSchema),
+    scopesValidationHandler(['create:movies']),
     async function (req, res, next) {
       const { body: movie } = req;
       try {
@@ -107,6 +105,7 @@ function moviesApi(app) {
   router.put(
     '/:movieId',
     passport.authenticate('jwt', { session: false }),
+    scopesValidationHandler(['update:movies']),
     validationHandler({ movieId: movieIdSchema }, 'params'),
     async function (req, res, next) {
       const { movieId } = req.params;
@@ -134,7 +133,6 @@ function moviesApi(app) {
     passport.authenticate('jwt', { session: false }),
     validationHandler({ movieId: movieIdSchema }, 'params'),
     async function (req, res, next) {
-      cacheResponse(res, SIXTY_MINUTES_IN_SECONDS); //tiene mas tiempo que es menos probable que editen una pelicula, en este caso la solicitada
       const { movieId } = req.params;
 
       try {
@@ -149,12 +147,11 @@ function moviesApi(app) {
       }
     }
   );
-
-  //validationHandler compara el esquema createMovieSchema con el body (por defecto)
+  
   router.post(
     '/',
     passport.authenticate('jwt', { session: false }),
-    //validationHandler(createMovieSchema),
+    scopesValidationHandler(['create:movies']),
     async function (req, res, next) {
       const { body: movie } = req;
       try {
@@ -173,6 +170,7 @@ function moviesApi(app) {
   router.delete(
     '/:movieId',
     passport.authenticate('jwt', { session: false }),
+    scopesValidationHandler(['delete:movies']),
     validationHandler({ movieId: movieIdSchema }, 'params'),
     async function (req, res, next) {
       const { movieId } = req.params;
